@@ -25,6 +25,7 @@ using CUE4Parse.GameTypes.TL.Objects;
 using CUE4Parse.GameTypes.TQ2.Objects;
 using CUE4Parse.GameTypes.TSW.Objects;
 using CUE4Parse.UE4.Assets.Exports.Animation;
+using CUE4Parse.UE4.Assets.Exports.Animation.CurveExpression;
 using CUE4Parse.UE4.Assets.Exports.ChaosClothAsset;
 using CUE4Parse.UE4.Assets.Exports.Engine.Font;
 using CUE4Parse.UE4.Assets.Exports.Harmonix;
@@ -74,6 +75,9 @@ public class FScriptStruct
     {
         StructType = structName switch
         {
+            "AnimNode_RemapCurves" or "AnimNode_RemapCurvesFromMesh" => type == ReadType.ZERO
+                ? new FAnimNodeRemapCurves()
+                : new FAnimNodeRemapCurves(Ar, structName, struc, type),
             "Box" => type == ReadType.ZERO ? new FBox() : new FBox(Ar),
             "Box2D" => type == ReadType.ZERO ? new FBox2D() : new FBox2D(Ar),
             "Box2f" => type == ReadType.ZERO ? new TBox2<float>() : new TBox2<float>(Ar),
