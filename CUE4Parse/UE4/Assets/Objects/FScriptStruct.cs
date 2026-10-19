@@ -75,6 +75,7 @@ public class FScriptStruct
     {
         StructType = structName switch
         {
+            "BitArrayWrapper" => type == ReadType.ZERO ? new FBitArrayWrapper() : new FBitArrayWrapper(Ar),
             "AnimNode_RemapCurves" or "AnimNode_RemapCurvesFromMesh" => type == ReadType.ZERO
                 ? new FAnimNodeRemapCurves()
                 : new FAnimNodeRemapCurves(Ar, structName, struc, type),
