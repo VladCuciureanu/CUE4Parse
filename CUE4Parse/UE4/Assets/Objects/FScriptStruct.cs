@@ -70,9 +70,13 @@ namespace CUE4Parse.UE4.Assets.Objects;
 public class FScriptStruct
 {
     public readonly IUStruct StructType;
+    // Keep the serialized UE type identity: FStructFallback alone erases it.
+    // Consumers such as cosmetic property stores require exact struct equality.
+    [JsonIgnore] public readonly string? StructName;
 
     public FScriptStruct(FAssetArchive Ar, string? structName, UStruct? struc, ReadType? type)
     {
+        StructName = structName;
         StructType = structName switch
         {
             "BitArrayWrapper" => type == ReadType.ZERO ? new FBitArrayWrapper() : new FBitArrayWrapper(Ar),
