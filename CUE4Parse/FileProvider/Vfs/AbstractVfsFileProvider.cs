@@ -51,6 +51,15 @@ namespace CUE4Parse.FileProvider.Vfs
         protected readonly ConcurrentDictionary<IAesVfsReader, object?> _unloadedVfs = new();
         public IReadOnlyCollection<IAesVfsReader> UnloadedVfs => (IReadOnlyCollection<IAesVfsReader>) _unloadedVfs.Keys;
 
+        /// <summary>
+        /// Names of packages that are not mounted here, by package id ("/Niagara/Modules/Update/Color/ScaleColor").
+        /// An IoStore package names what it imports only by package id and public export hash, so an import of a
+        /// package that isn't mounted (an editor copy importing an editor-only engine module the game doesn't carry)
+        /// resolves to nothing. Given its name here, the import of that package's main asset resolves to a reference
+        /// by name instead, which is all a consumer that has the package elsewhere needs.
+        /// </summary>
+        public ConcurrentDictionary<FPackageId, string> ExternalPackageNames { get; } = new();
+
         private readonly ConcurrentDictionary<IAesVfsReader, object?> _mountedVfs = new();
         public IReadOnlyCollection<IAesVfsReader> MountedVfs => (IReadOnlyCollection<IAesVfsReader>) _mountedVfs.Keys;
 

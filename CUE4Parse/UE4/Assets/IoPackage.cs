@@ -686,12 +686,47 @@ public sealed class IoPackage : AbstractUePackage
             }
         }
 
+        /* A package that isn't mounted, named through the provider's external names: only its main asset, whose
+         * public export hash is the hash of its own name, so the reference is checked rather than guessed */
+        if (index.IsPackageImport && realm.ImportedPublicExportHashes is { } exportHashes &&
+            Provider is AbstractVfsFileProvider { ExternalPackageNames.IsEmpty: false } vfs)
+        {
+            var reference = index.AsPackageImportRef;
+
+            if (reference.ImportedPackageIndex < realm.ImportedPackageIds.Length &&
+                reference.ImportedPublicExportHashIndex < exportHashes.Length &&
+                vfs.ExternalPackageNames.TryGetValue(realm.ImportedPackageIds[reference.ImportedPackageIndex], out var packageName))
+            {
+                var assetName = packageName[(packageName.LastIndexOf('/') + 1)..];
+
+                if (FPackageId.FromName(assetName).id == exportHashes[reference.ImportedPublicExportHashIndex])
+                {
+                    return new ResolvedExternalObject(this, packageName, assetName);
+                }
+            }
+        }
+
         if (Globals.WarnMissingImportPackage)
         {
             Log.Warning("Missing {0} import 0x{1:X} for package {2}", index.IsScriptImport ? "script" : "package", index.Value, Name);
         }
 
         return null;
+    }
+
+    /// <summary>The main asset of a package that isn't mounted, known by name only (<see cref="AbstractVfsFileProvider.ExternalPackageNames"/>).</summary>
+    private sealed class ResolvedExternalObject(IoPackage importer, string packageName, string assetName) : ResolvedObject(importer)
+    {
+        public override FName Name => new(assetName);
+        public override ResolvedObject Outer => new ResolvedExternalPackage(importer, packageName);
+        public override Lazy<UObject>? Object => null;
+    }
+
+    /// <summary>The package of a <see cref="ResolvedExternalObject"/>, whose name is the package path.</summary>
+    private sealed class ResolvedExternalPackage(IoPackage importer, string packageName) : ResolvedObject(importer)
+    {
+        public override FName Name => new(packageName);
+        public override Lazy<UObject>? Object => null;
     }
 
     /// <summary>
